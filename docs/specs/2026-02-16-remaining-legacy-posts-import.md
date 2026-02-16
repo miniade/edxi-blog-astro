@@ -28,15 +28,16 @@ Import the remaining seven specified legacy HTML posts into Astro markdown conte
 ## Validation
 - [x] Build passes
 - [x] Key routes/features verified
-- [ ] Deployment workflow passes
+- [x] Deployment workflow passes
 
 ## Change Log
 - 2026-02-16T00:00:00Z Spec created for remaining legacy post import batch.
 - 2026-02-16T05:44:44Z Imported 7 legacy HTML posts via `node scripts/import-static-posts.mjs <exact-targets>`, generating markdown files for `PowerShellPipeline`, `PowerShell_Study`, `DSCwinrm`, `WinBaseline`, `PoshBotVMware`, `LinuxPowerCLI`, and `NexusYum`.
 - 2026-02-16T05:44:44Z Ran `npm run build` successfully; build generated 28 pages including new blog routes for the imported posts.
+- 2026-02-16T07:14:49Z Pushed commit `4246e9e` to `main`; GitHub Action run `22053503306` completed successfully and deployed to publish repo `miniade/edxi.github.io-blog` (`origin/master` -> `6188588`).
 
 ## Decisions
 - Decision: Use existing importer with CLI-specified targets instead of changing default `targets` list.
 - Rationale: Keeps script reusable and limits this batch strictly to requested files.
-- Decision: Leave deployment workflow validation unchecked in this task.
-- Rationale: Current batch scope requires local import + build verification only; deployment verification is handled in deployment-specific workflow steps.
+- Decision: Confirm deployment workflow in a follow-up autopilot run after pushing commit `4246e9e`.
+- Rationale: This keeps import execution focused while still closing the loop on CI/deploy verification once the remote workflow finishes.
