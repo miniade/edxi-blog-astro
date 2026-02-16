@@ -14,5 +14,9 @@
     "@astrojs/sitemap": "^3.7.0",
     "astro": "^5.17.1",
     "sharp": "^0.34.3"
+  },
+  "devDependencies": {
+    "jsdom": "^28.1.0",
+    "turndown": "^7.2.2"
   }
 }
