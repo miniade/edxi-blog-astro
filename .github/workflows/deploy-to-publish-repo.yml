@@ -22,6 +22,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Checkout publish repo for migration audit
+        uses: actions/checkout@v4
+        with:
+          repository: miniade/edxi.github.io-blog
+          path: ../edxi.github.io-blog
+
       - name: Audit migration parity
         run: npm run audit:migration
 
