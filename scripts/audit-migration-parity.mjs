@@ -131,6 +131,11 @@ async function main() {
 
     const missingInAstro = makeDiff(legacySlugs, astroSlugs);
     const extraInAstro = makeDiff(astroSlugs, legacySlugs);
+    const hasDiffs = missingInAstro.length > 0 || extraInAstro.length > 0;
+
+    console.log(
+      `Audit parity summary: legacy=${legacySlugs.length}, astro=${astroSlugs.length}, missing=${missingInAstro.length}, extra=${extraInAstro.length}`,
+    );
 
     if (missingInAstro.length > 0) {
       warnings.push('Legacy posts are missing from Astro content.');
@@ -149,8 +154,13 @@ async function main() {
     });
 
     await writeReport(report);
+    if (hasDiffs) {
+      process.exitCode = 1;
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    console.error(`Migration audit failed: ${message}`);
+    process.exitCode = 1;
     const fallbackReport = buildReport({
       totalLegacyPosts: 0,
       totalAstroPosts: 0,
@@ -164,4 +174,3 @@ async function main() {
 }
 
 await main();
-process.exitCode = 0;
