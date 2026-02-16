@@ -9,7 +9,8 @@ const legacyRoot = process.env.LEGACY_BLOG_ROOT
   ? path.resolve(process.cwd(), process.env.LEGACY_BLOG_ROOT)
   : path.resolve(__dirname, '..', '..', 'edxi.github.io-blog');
 const astroRoot = path.resolve(__dirname, '..', 'src', 'content', 'blog');
-const reportPath = path.resolve(__dirname, '..', 'docs', 'MIGRATION_AUDIT.md');
+const markdownReportPath = path.resolve(__dirname, '..', 'docs', 'MIGRATION_AUDIT.md');
+const jsonReportPath = path.resolve(__dirname, '..', 'docs', 'MIGRATION_AUDIT.json');
 
 async function walkFiles(dir) {
   const files = [];
@@ -81,7 +82,7 @@ function renderList(items) {
 }
 
 function buildReport(data) {
-  const timestamp = new Date().toISOString();
+  const timestamp = data.generatedAt;
   const {
     totalLegacyPosts,
     totalAstroPosts,
@@ -118,14 +119,20 @@ function buildReport(data) {
 }
 
 async function writeReport(content) {
-  await fs.mkdir(path.dirname(reportPath), { recursive: true });
-  await fs.writeFile(reportPath, content, 'utf8');
+  await fs.mkdir(path.dirname(markdownReportPath), { recursive: true });
+  await fs.writeFile(markdownReportPath, content, 'utf8');
+}
+
+async function writeJsonReport(summary) {
+  await fs.mkdir(path.dirname(jsonReportPath), { recursive: true });
+  await fs.writeFile(jsonReportPath, `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
 }
 
 async function main() {
   const warnings = [];
 
   try {
+    const generatedAt = new Date().toISOString();
     const [legacySlugs, astroSlugs] = await Promise.all([
       getLegacySlugs(),
       getAstroSlugs(),
@@ -147,31 +154,47 @@ async function main() {
       warnings.push('Astro posts exist without a matching legacy slug.');
     }
 
-    const report = buildReport({
+    const summary = {
+      generatedAt,
       totalLegacyPosts: legacySlugs.length,
       totalAstroPosts: astroSlugs.length,
       missingInAstro,
       extraInAstro,
       warnings,
-    });
+      hasDiffs,
+    };
 
-    await writeReport(report);
+    const report = buildReport(summary);
+
+    await Promise.all([
+      writeReport(report),
+      writeJsonReport(summary),
+    ]);
     if (hasDiffs) {
       process.exitCode = 1;
     }
   } catch (error) {
+    const generatedAt = new Date().toISOString();
     const message = error instanceof Error ? error.message : String(error);
     console.error(`Migration audit failed: ${message}`);
     process.exitCode = 1;
-    const fallbackReport = buildReport({
+
+    const fallbackSummary = {
+      generatedAt,
       totalLegacyPosts: 0,
       totalAstroPosts: 0,
       missingInAstro: [],
       extraInAstro: [],
       warnings: [`Audit failed: ${message}`],
-    });
+      hasDiffs: false,
+    };
 
-    await writeReport(fallbackReport);
+    const fallbackReport = buildReport(fallbackSummary);
+
+    await Promise.all([
+      writeReport(fallbackReport),
+      writeJsonReport(fallbackSummary),
+    ]);
   }
 }
 
