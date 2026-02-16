@@ -27,7 +27,7 @@ Migrate the next batch of legacy posts from static Hexo-generated HTML into Astr
 ## Validation
 - [x] Build passes
 - [x] New markdown files generated under `src/content/blog/`
-- [ ] Deployment workflow passes
+- [x] Deployment workflow passes
 
 ## Change Log
 - 2026-02-16: Spec created.
