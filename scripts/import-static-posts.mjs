@@ -99,8 +99,10 @@ async function convertOne(relPath) {
 
 async function main() {
   await fs.mkdir(outputDir, { recursive: true });
+  const cliTargets = process.argv.slice(2);
+  const selectedTargets = cliTargets.length > 0 ? cliTargets : targets;
   const results = [];
-  for (const t of targets) {
+  for (const t of selectedTargets) {
     results.push(await convertOne(t));
   }
 
