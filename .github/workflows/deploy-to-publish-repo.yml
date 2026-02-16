@@ -26,9 +26,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: miniade/edxi.github.io-blog
-          path: ../edxi.github.io-blog
+          path: legacy-source
 
       - name: Audit migration parity
+        env:
+          LEGACY_BLOG_ROOT: legacy-source
         run: npm run audit:migration
 
       - name: Build Astro

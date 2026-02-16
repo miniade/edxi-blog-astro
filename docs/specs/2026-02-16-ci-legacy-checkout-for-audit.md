@@ -22,13 +22,19 @@ Repair GitHub Actions migration audit step so it can access legacy static posts 
 - Cross-repo checkout permissions must remain available to `GITHUB_TOKEN`.
 
 ## Validation
-- [ ] Build passes
-- [ ] Key routes/features verified
+- [x] Build passes (`npm run build`)
+- [x] Key routes/features verified (`npm run audit:migration`; also verified env override path `LEGACY_BLOG_ROOT=../edxi.github.io-blog`)
 - [ ] Deployment workflow passes
 
 ## Change Log
 - 2026-02-16T13:21:00Z Created spec after CI failure analysis (`ENOENT ../edxi.github.io-blog`).
+- 2026-02-16T13:23:00Z Added workflow checkout for `miniade/edxi.github.io-blog` before audit.
+- 2026-02-16T13:24:00Z Fixed checkout path restriction by moving checkout under workspace (`legacy-source`) and wiring `LEGACY_BLOG_ROOT` env into audit step.
+- 2026-02-16T13:25:00Z Updated audit script to support configurable legacy root via `LEGACY_BLOG_ROOT` env while preserving default local sibling fallback.
+- 2026-02-16T13:26:00Z Local validation passed: `npm run audit:migration`, `LEGACY_BLOG_ROOT=../edxi.github.io-blog npm run audit:migration`, `npm run build`.
 
 ## Decisions
-- Decision: Keep audit script legacy path contract unchanged and satisfy it in CI by checking out publish repo as sibling path.
-- Rationale: Fastest minimal fix with lowest code churn and immediate compatibility.
+- Decision: Introduce `LEGACY_BLOG_ROOT` env override in audit script instead of hardcoding only one legacy path.
+- Rationale: Works in both local dual-repo workspace and GitHub Actions sandbox path constraints.
+- Decision: In CI, checkout legacy publish repo to `legacy-source/` (within workspace) and set `LEGACY_BLOG_ROOT=legacy-source`.
+- Rationale: `actions/checkout` forbids paths outside workspace; this is the compatible route.

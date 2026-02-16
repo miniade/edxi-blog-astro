@@ -5,7 +5,9 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const legacyRoot = path.resolve(__dirname, '..', '..', 'edxi.github.io-blog');
+const legacyRoot = process.env.LEGACY_BLOG_ROOT
+  ? path.resolve(process.cwd(), process.env.LEGACY_BLOG_ROOT)
+  : path.resolve(__dirname, '..', '..', 'edxi.github.io-blog');
 const astroRoot = path.resolve(__dirname, '..', 'src', 'content', 'blog');
 const reportPath = path.resolve(__dirname, '..', 'docs', 'MIGRATION_AUDIT.md');
 
