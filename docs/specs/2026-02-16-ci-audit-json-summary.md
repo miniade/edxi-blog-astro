@@ -25,12 +25,13 @@ Make migration audit results easier to consume in CI by emitting a JSON summary 
 ## Validation
 - [x] Build passes (`npm run build`)
 - [x] Key routes/features verified (build output includes all 20 migrated blog routes)
-- [ ] Deployment workflow passes
+- [x] Deployment workflow passes (GitHub Actions run `22072700478`)
 
 ## Change Log
 - 2026-02-16T17:46:00Z Spec created for audit JSON + CI summary enhancement.
 - 2026-02-16T17:46:03Z Implemented JSON audit output and CI step summary/artifact upload changes.
 - 2026-02-16T17:46:03Z Local validation passed: `npm run audit:migration` (legacy=20, astro=20, missing=0, extra=0) + `npm run build`.
+- 2026-02-16T17:46:45Z CI run `22072700478` succeeded; publish repo deployed commit `26b52b7` from source `80104e5`.
 
 ## Decisions
 - Decision: Keep markdown report as source-facing artifact and add JSON as machine-facing artifact.
