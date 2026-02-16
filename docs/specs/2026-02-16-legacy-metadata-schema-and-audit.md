@@ -25,13 +25,14 @@ Ensure migrated posts keep explicit legacy mapping metadata in typed schema and 
 ## Validation
 - [x] Build passes (`npm run build`)
 - [x] Key routes/features verified (build generated all blog routes; audit reports `hasDiffs=false`)
-- [ ] Deployment workflow passes
+- [x] Deployment workflow passes (Actions run `22074968891` success; publish repo updated to `deploy: miniade/edxi-blog-astro@64223bd...`)
 
 ## Change Log
 - 2026-02-16T19:16:00Z Spec created.
 - 2026-02-16T19:17:00Z Codex-first execution used for implementation planning; local patch applied to `src/content.config.ts` and `scripts/audit-migration-parity.mjs`.
 - 2026-02-16T19:17:33Z Ran `npm run audit:migration`; summary `legacy=20, astro=20, missing=0, extra=0`, metadata findings all zero, `hasDiffs=false`.
 - 2026-02-16T19:17:40Z Ran `npm run build`; build succeeded (23 pages).
+- 2026-02-16T19:19:04Z Pushed `64223bd`; Actions run `22074968891` passed end-to-end (legacy checkout + audit gate + build + artifact + deploy), publish repo `origin/master` advanced to `4b31123`.
 
 ## Decisions
 - Decision: Add metadata integrity checks directly into existing migration parity audit.
