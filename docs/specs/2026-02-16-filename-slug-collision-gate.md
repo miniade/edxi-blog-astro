@@ -25,12 +25,13 @@ Harden migration parity checks by detecting duplicate Astro filename slugs acros
 ## Validation
 - [x] Build passes (`npm run build`)
 - [x] Key routes/features verified (`npm run audit:migration`: `duplicateFilenameSlug=0`)
-- [ ] Deployment workflow passes
+- [x] Deployment workflow passes (`Build and Deploy to publish repo` run `22080900268`)
 
 ## Change Log
 - 2026-02-16T23:46:00Z Spec created.
 - 2026-02-16T23:47:00Z Updated `scripts/audit-migration-parity.mjs` to detect `duplicateFilenameSlug` and include it in fail-fast findings, warnings, report sections, and JSON summary counters.
 - 2026-02-16T23:47:02Z Validation passed locally: `npm run audit:migration` and `npm run build`.
+- 2026-02-16T23:49:00Z Pushed commit `329dce5`; GitHub Actions run `22080900268` succeeded and publish repo updated to `deploy: miniade/edxi-blog-astro@329dce5...` (`c56b4eb`).
 
 ## Decisions
 - Decision: Treat duplicate filename slug as fail-fast finding, not informational warning only.
