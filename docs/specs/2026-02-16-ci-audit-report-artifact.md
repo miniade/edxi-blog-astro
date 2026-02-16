@@ -25,12 +25,14 @@ Ensure `docs/MIGRATION_AUDIT.md` is always captured from GitHub Actions runs (su
 ## Validation
 - [x] Build passes
 - [x] Key routes/features verified
-- [ ] Deployment workflow passes
+- [x] Deployment workflow passes
 
 ## Change Log
 - 2026-02-16T14:47:00Z Spec created.
 - 2026-02-16T14:45:00Z Updated `.github/workflows/deploy-to-publish-repo.yml` to always upload `docs/MIGRATION_AUDIT.md` as artifact `migration-audit-report` using `actions/upload-artifact@v4`.
 - 2026-02-16T14:45:00Z Local validation passed: `npm run audit:migration` (summary `legacy=20, astro=20, missing=0, extra=0`) and `npm run build`.
+- 2026-02-16T14:46:00Z Pushed commit `829631d`; GitHub Actions run `22067130331` succeeded with new artifact upload step and deploy completed.
+- 2026-02-16T14:47:00Z Publish repo `miniade/edxi.github.io-blog` updated to `deploy: miniade/edxi-blog-astro@829631d...` (`origin/master` -> `2ac95e7`).
 
 ## Decisions
 - Decision: Upload migration audit report with an `if: always()` workflow step.
