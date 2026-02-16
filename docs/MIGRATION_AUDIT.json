@@ -1,9 +1,17 @@
 {
-  "generatedAt": "2026-02-16T17:46:00.288Z",
+  "generatedAt": "2026-02-16T19:17:33.803Z",
   "totalLegacyPosts": 20,
   "totalAstroPosts": 20,
   "missingInAstro": [],
   "extraInAstro": [],
+  "metadataFindings": {
+    "missingLegacySlug": [],
+    "missingLegacyPath": [],
+    "duplicateLegacySlug": [],
+    "malformedLegacyPath": [],
+    "filenameSlugMismatchWarning": [],
+    "hasFindings": false
+  },
   "warnings": [],
   "hasDiffs": false
 }
