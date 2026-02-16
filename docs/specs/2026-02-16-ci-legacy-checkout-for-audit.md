@@ -24,7 +24,7 @@ Repair GitHub Actions migration audit step so it can access legacy static posts 
 ## Validation
 - [x] Build passes (`npm run build`)
 - [x] Key routes/features verified (`npm run audit:migration`; also verified env override path `LEGACY_BLOG_ROOT=../edxi.github.io-blog`)
-- [ ] Deployment workflow passes
+- [x] Deployment workflow passes (GitHub Actions run `22067157146`; parity `missing=0, extra=0`)
 
 ## Change Log
 - 2026-02-16T13:21:00Z Created spec after CI failure analysis (`ENOENT ../edxi.github.io-blog`).
@@ -34,8 +34,12 @@ Repair GitHub Actions migration audit step so it can access legacy static posts 
 - 2026-02-16T13:26:00Z Local validation passed: `npm run audit:migration`, `LEGACY_BLOG_ROOT=../edxi.github.io-blog npm run audit:migration`, `npm run build`.
 - 2026-02-16T13:29:00Z Corrected CI audit data source from publish repo (`miniade/edxi.github.io-blog`) to true legacy static repo (`edxi/edxi.github.io`) to avoid false diff signal (`legacy=0, extra=20`).
 
+- 2026-02-16T16:14:34Z Verified deployment/CI workflow success via GitHub Actions run `22067157146`; migration parity remained `missing=0, extra=0`.
+
 ## Decisions
 - Decision: Introduce `LEGACY_BLOG_ROOT` env override in audit script instead of hardcoding only one legacy path.
 - Rationale: Works in both local dual-repo workspace and GitHub Actions sandbox path constraints.
 - Decision: In CI, checkout the actual legacy static source repo (`edxi/edxi.github.io`) to `legacy-source/` (within workspace) and set `LEGACY_BLOG_ROOT=legacy-source`.
 - Rationale: publish repo content evolves with Astro deploys and is not a stable legacy baseline; using upstream legacy repo avoids false positives/negatives.
+- Decision: Mark deployment/CI validation complete using run `22067157146`.
+- Rationale: Successful GitHub Actions evidence confirms parity gate and deploy path after push.

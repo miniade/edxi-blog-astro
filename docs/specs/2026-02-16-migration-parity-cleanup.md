@@ -27,7 +27,7 @@ Clean up Astro starter/template posts that are not part of the legacy migration 
 ## Validation
 - [x] Build passes
 - [x] Key routes/features verified
-- [ ] Deployment workflow passes
+- [x] Deployment workflow passes (GitHub Actions run `22067157146`; parity `missing=0, extra=0`)
 - [x] `npm run audit:migration` reports no unexpected extras
 
 ## Change Log
@@ -36,8 +36,12 @@ Clean up Astro starter/template posts that are not part of the legacy migration 
 - 2026-02-16: Re-ran migration audit; `docs/MIGRATION_AUDIT.md` now reports 0 missing and 0 extras.
 - 2026-02-16: Ran `npm run build`; static build completed successfully with blog routes generated.
 
+- 2026-02-16T16:14:34Z Verified deployment/CI workflow success via GitHub Actions run `22067157146`; migration parity remained `missing=0, extra=0`.
+
 ## Decisions
 - Decision: Remove Astro starter/sample posts listed in migration audit extras.
 - Rationale: They are outside the legacy migration collection and create parity noise.
 - Decision: Keep deployment workflow validation unchecked in this task.
 - Rationale: This task validates local migration parity/build only; CI run verification is outside current execution scope.
+- Decision: Mark deployment/CI validation complete using run `22067157146`.
+- Rationale: Successful GitHub Actions evidence confirms parity gate and deploy path after push.

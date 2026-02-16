@@ -27,7 +27,7 @@ Add an automated audit that compares the legacy static blog post set with Astro 
 ## Validation
 - [x] Build passes (`npm run build`)
 - [x] Key routes/features verified (static routes generated for blog index + post pages)
-- [ ] Deployment workflow passes (not executed in this local audit-only task)
+- [x] Deployment workflow passes (verified by GitHub Actions run `22067157146`; parity `missing=0, extra=0`)
 
 ## Change Log
 - 2026-02-16 08:48 UTC Initialized spec and execution plan.
@@ -35,8 +35,12 @@ Add an automated audit that compares the legacy static blog post set with Astro 
 - 2026-02-16 08:50 UTC Generated `docs/MIGRATION_AUDIT.md`; result: 20 legacy posts covered, 0 missing, 5 Astro-only starter/demo posts.
 - 2026-02-16 08:50 UTC Completed local validation: `npm run audit:migration && npm run build`.
 
+- 2026-02-16T16:14:34Z Verified deployment/CI workflow success via GitHub Actions run `22067157146`; migration parity remained `missing=0, extra=0`.
+
 ## Decisions
 - Decision: Compare using slug-like basenames derived from both legacy `YYYY/MM/DD/<slug>/index.html` and Astro markdown filenames.
 - Rationale: This is stable across formatting differences and cheap to compute in CI/local.
 - Decision: Keep script exit code as 0 even on mismatch and encode mismatch as WARNING lines in report.
 - Rationale: Makes it safe for periodic automation while preserving actionable parity signals in the generated markdown artifact.
+- Decision: Mark deployment/CI validation complete using run `22067157146`.
+- Rationale: Successful GitHub Actions evidence confirms parity gate and deploy path after push.

@@ -26,7 +26,7 @@ Ensure `npm run audit:migration` exits non-zero when migration parity drifts, so
 ## Validation
 - [x] Build passes (`npm run build`)
 - [x] Key routes/features verified (`npm run audit:migration` summary reports `missing=0, extra=0`)
-- [ ] Deployment workflow passes
+- [x] Deployment workflow passes (GitHub Actions run `22067157146`; parity `missing=0, extra=0`)
 
 ## Change Log
 - 2026-02-16T13:16:00Z Created spec for audit fail-fast gate fix.
@@ -34,8 +34,12 @@ Ensure `npm run audit:migration` exits non-zero when migration parity drifts, so
 - 2026-02-16T13:19:00Z Added error-path stderr logging and non-zero exit code on runtime failure while preserving fallback report write.
 - 2026-02-16T13:20:00Z Validation passed locally: `npm run audit:migration`, `npm run build`.
 
+- 2026-02-16T16:14:34Z Verified deployment/CI workflow success via GitHub Actions run `22067157146`; migration parity remained `missing=0, extra=0`.
+
 ## Decisions
 - Decision: Keep parity comparison logic unchanged and only harden process exit semantics/output.
 - Rationale: Minimal, low-risk fix that makes existing CI gate effective immediately.
 - Decision: Keep report generation even on failures.
 - Rationale: `docs/MIGRATION_AUDIT.md` remains the debugging artifact for CI and manual inspection.
+- Decision: Mark deployment/CI validation complete using run `22067157146`.
+- Rationale: Successful GitHub Actions evidence confirms parity gate and deploy path after push.
