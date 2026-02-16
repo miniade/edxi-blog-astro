@@ -36,6 +36,14 @@ jobs:
       - name: Build Astro
         run: npm run build
 
+      - name: Upload migration audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-audit-report
+          path: docs/MIGRATION_AUDIT.md
+          if-no-files-found: warn
+
       - name: Deploy dist to publish repository
         uses: peaceiris/actions-gh-pages@v4
         with:
