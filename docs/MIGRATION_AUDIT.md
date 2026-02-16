@@ -1,6 +1,6 @@
 # Migration Audit Report
 
-Generated (UTC): 2026-02-16T22:14:45.190Z
+Generated (UTC): 2026-02-16T23:46:58.640Z
 
 ## Summary
 
@@ -12,6 +12,7 @@ Generated (UTC): 2026-02-16T22:14:45.190Z
 - Extra paths in Astro: 0
 - Missing legacySlug: 0
 - Missing legacyPath: 0
+- Duplicate filenameSlug: 0
 - Duplicate legacySlug: 0
 - Duplicate legacyPath: 0
 - Malformed legacyPath: 0
@@ -38,6 +39,9 @@ Generated (UTC): 2026-02-16T22:14:45.190Z
 - (none)
 
 ### Missing legacyPath
+- (none)
+
+### Duplicate filenameSlug
 - (none)
 
 ### Duplicate legacySlug

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-16T22:14:45.190Z",
+  "generatedAt": "2026-02-16T23:46:58.640Z",
   "totalLegacyPosts": 20,
   "totalAstroPosts": 20,
   "missingInAstro": [],
@@ -9,6 +9,7 @@
   "metadataFindings": {
     "missingLegacySlug": [],
     "missingLegacyPath": [],
+    "duplicateFilenameSlug": [],
     "duplicateLegacySlug": [],
     "duplicateLegacyPath": [],
     "malformedLegacyPath": [],
@@ -26,6 +27,7 @@
       "extraPathsInAstro": 0,
       "missingLegacySlug": 0,
       "missingLegacyPath": 0,
+      "duplicateFilenameSlug": 0,
       "duplicateLegacySlug": 0,
       "duplicateLegacyPath": 0,
       "malformedLegacyPath": 0,

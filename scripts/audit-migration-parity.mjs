@@ -128,14 +128,19 @@ async function getAstroPosts() {
 function validateMetadata(posts) {
   const missingLegacySlug = [];
   const missingLegacyPath = [];
+  const duplicateFilenameSlug = [];
   const duplicateLegacySlug = [];
   const duplicateLegacyPath = [];
   const malformedLegacyPath = [];
   const filenameSlugMismatchWarning = [];
+  const filenameSlugToFiles = new Map();
   const legacySlugToFiles = new Map();
   const legacyPathToFiles = new Map();
 
   for (const post of posts) {
+    const existingFilenameSlug = filenameSlugToFiles.get(post.filenameSlug) ?? [];
+    existingFilenameSlug.push(post.file);
+    filenameSlugToFiles.set(post.filenameSlug, existingFilenameSlug);
     if (!post.legacySlug) {
       missingLegacySlug.push(post.file);
     } else {
@@ -176,6 +181,12 @@ function validateMetadata(posts) {
     }
   }
 
+  for (const [filenameSlug, files] of filenameSlugToFiles.entries()) {
+    if (files.length > 1) {
+      duplicateFilenameSlug.push({ filenameSlug, files: [...files].sort((a, b) => a.localeCompare(b)) });
+    }
+  }
+
   for (const [legacySlug, files] of legacySlugToFiles.entries()) {
     if (files.length > 1) {
       duplicateLegacySlug.push({ legacySlug, files: [...files].sort((a, b) => a.localeCompare(b)) });
@@ -191,6 +202,7 @@ function validateMetadata(posts) {
   const hasFindings =
     missingLegacySlug.length > 0 ||
     missingLegacyPath.length > 0 ||
+    duplicateFilenameSlug.length > 0 ||
     duplicateLegacySlug.length > 0 ||
     duplicateLegacyPath.length > 0 ||
     malformedLegacyPath.length > 0 ||
@@ -199,6 +211,7 @@ function validateMetadata(posts) {
   return {
     missingLegacySlug: missingLegacySlug.sort((a, b) => a.localeCompare(b)),
     missingLegacyPath: missingLegacyPath.sort((a, b) => a.localeCompare(b)),
+    duplicateFilenameSlug: duplicateFilenameSlug.sort((a, b) => a.filenameSlug.localeCompare(b.filenameSlug)),
     duplicateLegacySlug: duplicateLegacySlug.sort((a, b) => a.legacySlug.localeCompare(b.legacySlug)),
     duplicateLegacyPath: duplicateLegacyPath.sort((a, b) => a.legacyPath.localeCompare(b.legacyPath)),
     malformedLegacyPath: malformedLegacyPath.sort((a, b) => a.file.localeCompare(b.file)),
@@ -237,6 +250,16 @@ function renderDuplicateLegacyPaths(items) {
 
   return items
     .map((item) => `- \`${item.legacyPath}\`: ${item.files.map((file) => `\`${file}\``).join(', ')}`)
+    .join('\n');
+}
+
+function renderDuplicateFilenameSlugs(items) {
+  if (items.length === 0) {
+    return '- (none)';
+  }
+
+  return items
+    .map((item) => `- \`${item.filenameSlug}\`: ${item.files.map((file) => `\`${file}\``).join(', ')}`)
     .join('\n');
 }
 
@@ -292,6 +315,7 @@ function buildReport(data) {
     `- Extra paths in Astro: ${extraPathsInAstro.length}`,
     `- Missing legacySlug: ${metadataFindings.missingLegacySlug.length}`,
     `- Missing legacyPath: ${metadataFindings.missingLegacyPath.length}`,
+    `- Duplicate filenameSlug: ${metadataFindings.duplicateFilenameSlug.length}`,
     `- Duplicate legacySlug: ${metadataFindings.duplicateLegacySlug.length}`,
     `- Duplicate legacyPath: ${metadataFindings.duplicateLegacyPath.length}`,
     `- Malformed legacyPath: ${metadataFindings.malformedLegacyPath.length}`,
@@ -319,6 +343,9 @@ function buildReport(data) {
     '',
     '### Missing legacyPath',
     renderList(metadataFindings.missingLegacyPath),
+    '',
+    '### Duplicate filenameSlug',
+    renderDuplicateFilenameSlugs(metadataFindings.duplicateFilenameSlug),
     '',
     '### Duplicate legacySlug',
     renderDuplicateLegacySlugs(metadataFindings.duplicateLegacySlug),
@@ -368,7 +395,7 @@ async function main() {
       metadataFindings.hasFindings;
 
     console.log(
-      `Audit parity summary: legacy=${legacyData.legacySlugs.length}, astro=${astroData.astroSlugs.length}, missing=${missingInAstro.length}, extra=${extraInAstro.length}, missingPaths=${missingPathsInAstro.length}, extraPaths=${extraPathsInAstro.length}`,
+      `Audit parity summary: legacy=${legacyData.legacySlugs.length}, astro=${astroData.astroSlugs.length}, missing=${missingInAstro.length}, extra=${extraInAstro.length}, missingPaths=${missingPathsInAstro.length}, extraPaths=${extraPathsInAstro.length}, duplicateFilenameSlug=${metadataFindings.duplicateFilenameSlug.length}`,
     );
 
     if (missingInAstro.length > 0) {
@@ -393,6 +420,10 @@ async function main() {
 
     if (metadataFindings.missingLegacyPath.length > 0) {
       warnings.push('Some Astro posts are missing legacyPath.');
+    }
+
+    if (metadataFindings.duplicateFilenameSlug.length > 0) {
+      warnings.push('Duplicate filenameSlug values detected.');
     }
 
     if (metadataFindings.duplicateLegacySlug.length > 0) {
@@ -420,6 +451,7 @@ async function main() {
       extraPathsInAstro: extraPathsInAstro.length,
       missingLegacySlug: metadataFindings.missingLegacySlug.length,
       missingLegacyPath: metadataFindings.missingLegacyPath.length,
+      duplicateFilenameSlug: metadataFindings.duplicateFilenameSlug.length,
       duplicateLegacySlug: metadataFindings.duplicateLegacySlug.length,
       duplicateLegacyPath: metadataFindings.duplicateLegacyPath.length,
       malformedLegacyPath: metadataFindings.malformedLegacyPath.length,
@@ -469,6 +501,7 @@ async function main() {
       metadataFindings: {
         missingLegacySlug: [],
         missingLegacyPath: [],
+        duplicateFilenameSlug: [],
         duplicateLegacySlug: [],
         duplicateLegacyPath: [],
         malformedLegacyPath: [],
@@ -486,6 +519,7 @@ async function main() {
           extraPathsInAstro: 0,
           missingLegacySlug: 0,
           missingLegacyPath: 0,
+          duplicateFilenameSlug: 0,
           duplicateLegacySlug: 0,
           duplicateLegacyPath: 0,
           malformedLegacyPath: 0,
