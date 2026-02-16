@@ -22,12 +22,13 @@ Verify CI is green and migration parity remains `missing=0` and `extra=0` after 
 ## Validation
 - [x] Build passes
 - [x] Key routes/features verified
-- [x] Deployment workflow passes (GitHub Actions runs `22067157146` and `22070122516`)
+- [x] Deployment workflow passes (GitHub Actions runs `22067157146`, `22070122516`, `22070146913`)
 
 ## Change Log
 - 2026-02-16T16:14:34Z Created closeout spec for CI/parity verification.
 - 2026-02-16T16:14:34Z Recorded verification evidence from successful GitHub Actions run `22067157146` with migration parity `missing=0, extra=0`.
 - 2026-02-16T16:17:30Z Pushed doc-closeout commit `7c1291b`; GitHub Actions run `22070122516` succeeded with audit gate + deploy green.
+- 2026-02-16T16:18:30Z Pushed follow-up commit `b6cde7d`; GitHub Actions run `22070146913` succeeded, confirming closeout docs updates are CI-safe.
 
 ## Decisions
 - Decision: Use run `22067157146` as migration closeout verification evidence.
