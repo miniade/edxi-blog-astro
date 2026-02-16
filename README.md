@@ -49,10 +49,15 @@ You can set it with GitHub CLI:
 gh secret set PUBLISH_REPO_TOKEN --repo miniade/edxi-blog-astro
 ```
 
+## Engineering workflow
+
+- Codex-first development: `docs/DEVELOPMENT_WORKFLOW.md`
+- Task specs live under: `docs/specs/`
+
 ## Migration status
 
 - [x] Astro scaffold initialized
 - [x] Build passes locally
 - [x] Deploy workflow to publish repo prepared
-- [ ] Static HTML -> Markdown extraction pipeline
+- [x] Static HTML -> Markdown extraction pipeline (initial)
 - [ ] Real post migration + URL compatibility checks
