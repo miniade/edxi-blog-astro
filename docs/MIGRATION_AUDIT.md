@@ -1,6 +1,6 @@
 # Migration Audit Report
 
-Generated (UTC): 2026-02-16T20:47:40.167Z
+Generated (UTC): 2026-02-16T22:14:45.190Z
 
 ## Summary
 
@@ -13,6 +13,7 @@ Generated (UTC): 2026-02-16T20:47:40.167Z
 - Missing legacySlug: 0
 - Missing legacyPath: 0
 - Duplicate legacySlug: 0
+- Duplicate legacyPath: 0
 - Malformed legacyPath: 0
 - Filename/legacySlug mismatch warnings: 0
 - Warnings: 0
@@ -40,6 +41,9 @@ Generated (UTC): 2026-02-16T20:47:40.167Z
 - (none)
 
 ### Duplicate legacySlug
+- (none)
+
+### Duplicate legacyPath
 - (none)
 
 ### Malformed legacyPath
