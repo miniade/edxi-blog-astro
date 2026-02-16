@@ -1,6 +1,6 @@
 # Migration Audit Report
 
-Generated (UTC): 2026-02-16T19:17:33.803Z
+Generated (UTC): 2026-02-16T20:47:40.167Z
 
 ## Summary
 
@@ -8,11 +8,14 @@ Generated (UTC): 2026-02-16T19:17:33.803Z
 - Total Astro posts: 20
 - Missing in Astro: 0
 - Extra in Astro: 0
+- Missing paths in Astro: 0
+- Extra paths in Astro: 0
 - Missing legacySlug: 0
 - Missing legacyPath: 0
 - Duplicate legacySlug: 0
 - Malformed legacyPath: 0
 - Filename/legacySlug mismatch warnings: 0
+- Warnings: 0
 
 ## Diffs
 
@@ -20,6 +23,12 @@ Generated (UTC): 2026-02-16T19:17:33.803Z
 - (none)
 
 ### Extra in Astro (not present in legacy)
+- (none)
+
+### Missing Paths in Astro (present in legacy)
+- (none)
+
+### Extra Paths in Astro (not present in legacy)
 - (none)
 
 ## Metadata Integrity

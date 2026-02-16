@@ -62,6 +62,8 @@ jobs:
             append(`- Astro posts: ${r.totalAstroPosts ?? 'n/a'}`);
             append(`- Missing in Astro: ${Array.isArray(r.missingInAstro) ? r.missingInAstro.length : 'n/a'}`);
             append(`- Extra in Astro: ${Array.isArray(r.extraInAstro) ? r.extraInAstro.length : 'n/a'}`);
+            append(`- Missing paths in Astro: ${Array.isArray(r.missingPathsInAstro) ? r.missingPathsInAstro.length : 'n/a'}`);
+            append(`- Extra paths in Astro: ${Array.isArray(r.extraPathsInAstro) ? r.extraPathsInAstro.length : 'n/a'}`);
             append(`- Has diffs: ${r.hasDiffs === true ? 'yes' : 'no'}`);
           } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);

@@ -1,9 +1,11 @@
 {
-  "generatedAt": "2026-02-16T19:17:33.803Z",
+  "generatedAt": "2026-02-16T20:47:40.167Z",
   "totalLegacyPosts": 20,
   "totalAstroPosts": 20,
   "missingInAstro": [],
   "extraInAstro": [],
+  "missingPathsInAstro": [],
+  "extraPathsInAstro": [],
   "metadataFindings": {
     "missingLegacySlug": [],
     "missingLegacyPath": [],
@@ -13,5 +15,21 @@
     "hasFindings": false
   },
   "warnings": [],
+  "summary": {
+    "counts": {
+      "totalLegacyPosts": 20,
+      "totalAstroPosts": 20,
+      "missingInAstro": 0,
+      "extraInAstro": 0,
+      "missingPathsInAstro": 0,
+      "extraPathsInAstro": 0,
+      "missingLegacySlug": 0,
+      "missingLegacyPath": 0,
+      "duplicateLegacySlug": 0,
+      "malformedLegacyPath": 0,
+      "filenameSlugMismatchWarning": 0
+    },
+    "warningsCount": 0
+  },
   "hasDiffs": false
 }

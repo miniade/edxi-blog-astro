@@ -11,6 +11,7 @@ const legacyRoot = process.env.LEGACY_BLOG_ROOT
 const astroRoot = path.resolve(__dirname, '..', 'src', 'content', 'blog');
 const markdownReportPath = path.resolve(__dirname, '..', 'docs', 'MIGRATION_AUDIT.md');
 const jsonReportPath = path.resolve(__dirname, '..', 'docs', 'MIGRATION_AUDIT.json');
+const legacyPathPattern = /^\/\d{4}\/\d{2}\/\d{2}\/([^/]+)\/$/;
 
 async function walkFiles(dir) {
   const files = [];
@@ -64,10 +65,11 @@ function parseFrontmatterString(frontmatter, key) {
   return normalizeYamlScalar(match[1]);
 }
 
-async function getLegacySlugs() {
+async function getLegacyData() {
   const files = await walkFiles(legacyRoot);
   const slugSet = new Set();
-  const legacyPattern = /(^|\/)\d{4}\/\d{2}\/\d{2}\/([^/]+)\/index\.html$/;
+  const pathSet = new Set();
+  const legacyPattern = /(^|\/)(\d{4})\/(\d{2})\/(\d{2})\/([^/]+)\/index\.html$/;
 
   for (const filePath of files) {
     const relative = toPosixPath(path.relative(legacyRoot, filePath));
@@ -75,15 +77,20 @@ async function getLegacySlugs() {
     if (!match) {
       continue;
     }
-    slugSet.add(match[2]);
+    slugSet.add(match[5]);
+    pathSet.add(`/${match[2]}/${match[3]}/${match[4]}/${match[5]}/`);
   }
 
-  return Array.from(slugSet).sort((a, b) => a.localeCompare(b));
+  return {
+    legacySlugs: Array.from(slugSet).sort((a, b) => a.localeCompare(b)),
+    legacyPaths: Array.from(pathSet).sort((a, b) => a.localeCompare(b)),
+  };
 }
 
 async function getAstroPosts() {
   const files = await walkFiles(astroRoot);
   const slugSet = new Set();
+  const legacyPathSet = new Set();
   const posts = [];
 
   for (const filePath of files) {
@@ -97,17 +104,23 @@ async function getAstroPosts() {
     const relativePath = toPosixPath(path.relative(astroRoot, filePath));
     const source = await fs.readFile(filePath, 'utf8');
     const frontmatter = extractFrontmatter(source);
+    const legacyPath = parseFrontmatterString(frontmatter, 'legacyPath');
+
+    if (legacyPathPattern.test(legacyPath)) {
+      legacyPathSet.add(legacyPath);
+    }
 
     posts.push({
       file: relativePath,
       filenameSlug,
       legacySlug: parseFrontmatterString(frontmatter, 'legacySlug'),
-      legacyPath: parseFrontmatterString(frontmatter, 'legacyPath'),
+      legacyPath,
     });
   }
 
   return {
     astroSlugs: Array.from(slugSet).sort((a, b) => a.localeCompare(b)),
+    astroLegacyPaths: Array.from(legacyPathSet).sort((a, b) => a.localeCompare(b)),
     posts,
   };
 }
@@ -132,7 +145,7 @@ function validateMetadata(posts) {
     if (!post.legacyPath) {
       missingLegacyPath.push(post.file);
     } else {
-      const match = post.legacyPath.match(/^\/\d{4}\/\d{2}\/\d{2}\/([^/]+)\/$/);
+      const match = post.legacyPath.match(legacyPathPattern);
       if (!match) {
         malformedLegacyPath.push({
           file: post.file,
@@ -230,6 +243,8 @@ function buildReport(data) {
     totalAstroPosts,
     missingInAstro,
     extraInAstro,
+    missingPathsInAstro,
+    extraPathsInAstro,
     warnings,
     metadataFindings,
   } = data;
@@ -249,11 +264,14 @@ function buildReport(data) {
     `- Total Astro posts: ${totalAstroPosts}`,
     `- Missing in Astro: ${missingInAstro.length}`,
     `- Extra in Astro: ${extraInAstro.length}`,
+    `- Missing paths in Astro: ${missingPathsInAstro.length}`,
+    `- Extra paths in Astro: ${extraPathsInAstro.length}`,
     `- Missing legacySlug: ${metadataFindings.missingLegacySlug.length}`,
     `- Missing legacyPath: ${metadataFindings.missingLegacyPath.length}`,
     `- Duplicate legacySlug: ${metadataFindings.duplicateLegacySlug.length}`,
     `- Malformed legacyPath: ${metadataFindings.malformedLegacyPath.length}`,
     `- Filename/legacySlug mismatch warnings: ${metadataFindings.filenameSlugMismatchWarning.length}`,
+    `- Warnings: ${warnings.length}`,
     '',
     '## Diffs',
     '',
@@ -262,6 +280,12 @@ function buildReport(data) {
     '',
     '### Extra in Astro (not present in legacy)',
     renderList(extraInAstro),
+    '',
+    '### Missing Paths in Astro (present in legacy)',
+    renderList(missingPathsInAstro),
+    '',
+    '### Extra Paths in Astro (not present in legacy)',
+    renderList(extraPathsInAstro),
     '',
     '## Metadata Integrity',
     '',
@@ -298,18 +322,25 @@ async function main() {
 
   try {
     const generatedAt = new Date().toISOString();
-    const [legacySlugs, astroData] = await Promise.all([
-      getLegacySlugs(),
+    const [legacyData, astroData] = await Promise.all([
+      getLegacyData(),
       getAstroPosts(),
     ]);
 
-    const missingInAstro = makeDiff(legacySlugs, astroData.astroSlugs);
-    const extraInAstro = makeDiff(astroData.astroSlugs, legacySlugs);
+    const missingInAstro = makeDiff(legacyData.legacySlugs, astroData.astroSlugs);
+    const extraInAstro = makeDiff(astroData.astroSlugs, legacyData.legacySlugs);
+    const missingPathsInAstro = makeDiff(legacyData.legacyPaths, astroData.astroLegacyPaths);
+    const extraPathsInAstro = makeDiff(astroData.astroLegacyPaths, legacyData.legacyPaths);
     const metadataFindings = validateMetadata(astroData.posts);
-    const hasDiffs = missingInAstro.length > 0 || extraInAstro.length > 0 || metadataFindings.hasFindings;
+    const hasDiffs =
+      missingInAstro.length > 0 ||
+      extraInAstro.length > 0 ||
+      missingPathsInAstro.length > 0 ||
+      extraPathsInAstro.length > 0 ||
+      metadataFindings.hasFindings;
 
     console.log(
-      `Audit parity summary: legacy=${legacySlugs.length}, astro=${astroData.astroSlugs.length}, missing=${missingInAstro.length}, extra=${extraInAstro.length}`,
+      `Audit parity summary: legacy=${legacyData.legacySlugs.length}, astro=${astroData.astroSlugs.length}, missing=${missingInAstro.length}, extra=${extraInAstro.length}, missingPaths=${missingPathsInAstro.length}, extraPaths=${extraPathsInAstro.length}`,
     );
 
     if (missingInAstro.length > 0) {
@@ -318,6 +349,14 @@ async function main() {
 
     if (extraInAstro.length > 0) {
       warnings.push('Astro posts exist without a matching legacy slug.');
+    }
+
+    if (missingPathsInAstro.length > 0) {
+      warnings.push('Legacy URL paths are missing from Astro legacyPath mappings.');
+    }
+
+    if (extraPathsInAstro.length > 0) {
+      warnings.push('Astro legacyPath mappings exist without matching legacy URL paths.');
     }
 
     if (metadataFindings.missingLegacySlug.length > 0) {
@@ -340,14 +379,34 @@ async function main() {
       warnings.push('Filename slug and legacySlug mismatch warnings detected.');
     }
 
+    const counts = {
+      totalLegacyPosts: legacyData.legacySlugs.length,
+      totalAstroPosts: astroData.astroSlugs.length,
+      missingInAstro: missingInAstro.length,
+      extraInAstro: extraInAstro.length,
+      missingPathsInAstro: missingPathsInAstro.length,
+      extraPathsInAstro: extraPathsInAstro.length,
+      missingLegacySlug: metadataFindings.missingLegacySlug.length,
+      missingLegacyPath: metadataFindings.missingLegacyPath.length,
+      duplicateLegacySlug: metadataFindings.duplicateLegacySlug.length,
+      malformedLegacyPath: metadataFindings.malformedLegacyPath.length,
+      filenameSlugMismatchWarning: metadataFindings.filenameSlugMismatchWarning.length,
+    };
+
     const summary = {
       generatedAt,
-      totalLegacyPosts: legacySlugs.length,
+      totalLegacyPosts: legacyData.legacySlugs.length,
       totalAstroPosts: astroData.astroSlugs.length,
       missingInAstro,
       extraInAstro,
+      missingPathsInAstro,
+      extraPathsInAstro,
       metadataFindings,
       warnings,
+      summary: {
+        counts,
+        warningsCount: warnings.length,
+      },
       hasDiffs,
     };
 
@@ -372,6 +431,8 @@ async function main() {
       totalAstroPosts: 0,
       missingInAstro: [],
       extraInAstro: [],
+      missingPathsInAstro: [],
+      extraPathsInAstro: [],
       metadataFindings: {
         missingLegacySlug: [],
         missingLegacyPath: [],
@@ -381,6 +442,22 @@ async function main() {
         hasFindings: false,
       },
       warnings: [`Audit failed: ${message}`],
+      summary: {
+        counts: {
+          totalLegacyPosts: 0,
+          totalAstroPosts: 0,
+          missingInAstro: 0,
+          extraInAstro: 0,
+          missingPathsInAstro: 0,
+          extraPathsInAstro: 0,
+          missingLegacySlug: 0,
+          missingLegacyPath: 0,
+          duplicateLegacySlug: 0,
+          malformedLegacyPath: 0,
+          filenameSlugMismatchWarning: 0,
+        },
+        warningsCount: 1,
+      },
       hasDiffs: false,
     };
 
