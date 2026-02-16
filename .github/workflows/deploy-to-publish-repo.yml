@@ -22,6 +22,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Audit migration parity
+        run: npm run audit:migration
+
       - name: Build Astro
         run: npm run build
 
