@@ -25,13 +25,14 @@ Ensure `docs/MIGRATION_AUDIT.json` accurately signals failure state when `audit:
 ## Validation
 - [x] Build passes (`npm run build`)
 - [x] Key routes/features verified (`npm run audit:migration`: `legacy=20, astro=20, missing=0, extra=0, missingPaths=0, extraPaths=0`)
-- [ ] Deployment workflow passes
+- [x] Deployment workflow passes (GitHub Actions run `22084130659`)
 
 ## Change Log
 - 2026-02-17T01:14:18Z Spec created for migration audit fallback JSON consistency fix.
 - 2026-02-17T01:15:00Z Attempted Codex CLI execution first (`codex exec`); environment was read-only, so patch plan was produced and then applied locally to target file.
 - 2026-02-17T01:15:18Z Updated `scripts/audit-migration-parity.mjs` catch fallback summary: added `errorMessage`, switched `metadataFindings.hasFindings` to `true`, and switched `hasDiffs` to `true` for explicit failure semantics.
 - 2026-02-17T01:15:25Z Ran validation: `npm run audit:migration` and `npm run build` both passed.
+- 2026-02-17T02:44:59Z Pushed commit `4e71930`; deployment workflow run `22084130659` passed and publish repo updated to `deploy: miniade/edxi-blog-astro@4e71930...` (`a7f1b9e`).
 
 ## Decisions
 - Decision: Keep existing JSON shape and only add failure-safe fields/values.
