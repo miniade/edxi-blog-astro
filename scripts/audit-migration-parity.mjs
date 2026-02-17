@@ -492,6 +492,7 @@ async function main() {
 
     const fallbackSummary = {
       generatedAt,
+      errorMessage: message,
       totalLegacyPosts: 0,
       totalAstroPosts: 0,
       missingInAstro: [],
@@ -506,7 +507,7 @@ async function main() {
         duplicateLegacyPath: [],
         malformedLegacyPath: [],
         filenameSlugMismatchWarning: [],
-        hasFindings: false,
+        hasFindings: true,
       },
       warnings: [`Audit failed: ${message}`],
       summary: {
@@ -527,7 +528,7 @@ async function main() {
         },
         warningsCount: 1,
       },
-      hasDiffs: false,
+      hasDiffs: true,
     };
 
     const fallbackReport = buildReport(fallbackSummary);
