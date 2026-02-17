@@ -52,9 +52,26 @@ Template:
 
 1. Create/update spec doc
 2. Execute implementation with Codex CLI
-3. Review diff and run validation commands
-4. Update spec `Change Log` + `Decisions`
-5. Commit code + docs together
+3. If Codex execution fails, auto-retry once with a narrowed prompt
+4. If retry also fails, switch to fallback command/tool path and continue
+5. Review diff and run validation commands
+6. Update spec `Change Log` + `Decisions`
+7. Commit code + docs together
+
+## Codex Reliability Policy (Auto-Retry + Fallback)
+
+For coding tasks, use this reliability chain:
+
+1. **Primary**: `codex exec` with `pty=true`
+2. **Retry once**: rerun with a narrowed/safer prompt (same task, smaller scope)
+3. **Fallback**:
+   - command fallback: prefer POSIX-safe alternatives (`grep` when `rg` missing, `python3` when `python` missing)
+   - tool fallback: if Codex run is blocked by sandbox constraints, apply equivalent minimal patch directly in workspace and continue validation
+
+Required logging in spec Change Log:
+- whether retry happened
+- which fallback was used
+- why fallback was required
 
 ## Minimum Validation for this repo
 
