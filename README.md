@@ -60,4 +60,6 @@ gh secret set PUBLISH_REPO_TOKEN --repo miniade/edxi-blog-astro
 - [x] Build passes locally
 - [x] Deploy workflow to publish repo prepared
 - [x] Static HTML -> Markdown extraction pipeline (initial)
-- [ ] Real post migration + URL compatibility checks
+- [x] Real post migration + URL compatibility checks
+- [x] Migration audit parity (20 posts)
+- [x] All metadata integrity checks pass
