@@ -31,7 +31,7 @@
 - [x] 既有 `Audit migration parity` 步骤保持不变。
 - [x] Step Summary 增加 metadata findings 指标并具备 backward compatibility（字段缺失返回 `n/a`）。
 - [x] `npm run audit:migration && npm run build` 本地通过。
-- [ ] CI workflow 通过并完成发布仓部署映射核对。
+- [x] CI workflow 通过并完成发布仓部署映射核对。
 
 ## Change Log
 - 2026-02-17T08:47:00Z 创建 spec，定义 CI 强制自检接入范围与验证标准。
@@ -39,6 +39,7 @@
 - 2026-02-17T08:48:00Z 扩展 Step Summary，新增 `Metadata findings` 行（读取 `metadataFindings.hasFindings`，缺失时 `n/a`）。
 - 2026-02-17T08:46:00Z 本地验证通过：`npm run audit:migration && npm run build`。
 - 2026-02-17T08:46:00Z 本地自检通过：`npm run audit:migration:verify-gate`。
+- 2026-02-17T08:47:00Z GitHub Actions run `22091697003` 全流程通过（含新增负向夹具闸门步骤）；发布仓 `origin/master` 更新为 `deploy: miniade/edxi-blog-astro@4ec81544e08088f023abf9ac43774327c9cadfd5`（`a6c4d97`）。
 
 ## Decisions
 - Decision: 将负向夹具验证提升为部署流水线必经步骤。
