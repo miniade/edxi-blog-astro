@@ -12,6 +12,7 @@ const astroRoot = path.resolve(__dirname, '..', 'src', 'content', 'blog');
 const markdownReportPath = path.resolve(__dirname, '..', 'docs', 'MIGRATION_AUDIT.md');
 const jsonReportPath = path.resolve(__dirname, '..', 'docs', 'MIGRATION_AUDIT.json');
 const legacyPathPattern = /^\/\d{4}\/\d{2}\/\d{2}\/([^/]+)\/$/;
+const legacyPathDatePattern = /^\/(\d{4})\/(\d{2})\/(\d{2})\/[^/]+\/$/;
 
 async function walkFiles(dir) {
   const files = [];
@@ -65,6 +66,23 @@ function parseFrontmatterString(frontmatter, key) {
   return normalizeYamlScalar(match[1]);
 }
 
+function parsePubDateUtcDateParts(value) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return {
+    year: String(parsed.getUTCFullYear()),
+    month: String(parsed.getUTCMonth() + 1).padStart(2, '0'),
+    day: String(parsed.getUTCDate()).padStart(2, '0'),
+  };
+}
+
 async function getLegacyData() {
   const files = await walkFiles(legacyRoot);
   const slugSet = new Set();
@@ -115,6 +133,7 @@ async function getAstroPosts() {
       filenameSlug,
       legacySlug: parseFrontmatterString(frontmatter, 'legacySlug'),
       legacyPath,
+      pubDate: parseFrontmatterString(frontmatter, 'pubDate'),
     });
   }
 
@@ -132,6 +151,7 @@ function validateMetadata(posts) {
   const duplicateLegacySlug = [];
   const duplicateLegacyPath = [];
   const malformedLegacyPath = [];
+  const pubDateLegacyPathDateMismatch = [];
   const filenameSlugMismatchWarning = [];
   const filenameSlugToFiles = new Map();
   const legacySlugToFiles = new Map();
@@ -172,6 +192,47 @@ function validateMetadata(posts) {
       }
     }
 
+    if (post.legacyPath) {
+      const legacyPathDateMatch = post.legacyPath.match(legacyPathDatePattern);
+      if (legacyPathDateMatch) {
+        if (!post.pubDate) {
+          pubDateLegacyPathDateMismatch.push({
+            file: post.file,
+            pubDate: '',
+            legacyPath: post.legacyPath,
+            expectedDateFromLegacyPath: `${legacyPathDateMatch[1]}-${legacyPathDateMatch[2]}-${legacyPathDateMatch[3]}`,
+            actualDateFromPubDateUtc: '(missing)',
+            reason: 'missing pubDate',
+          });
+        } else {
+          const pubDateParts = parsePubDateUtcDateParts(post.pubDate);
+          const legacyPathDate = `${legacyPathDateMatch[1]}-${legacyPathDateMatch[2]}-${legacyPathDateMatch[3]}`;
+          if (!pubDateParts) {
+            pubDateLegacyPathDateMismatch.push({
+              file: post.file,
+              pubDate: post.pubDate,
+              legacyPath: post.legacyPath,
+              expectedDateFromLegacyPath: legacyPathDate,
+              actualDateFromPubDateUtc: '(unparseable)',
+              reason: 'invalid pubDate',
+            });
+          } else {
+            const pubDateDate = `${pubDateParts.year}-${pubDateParts.month}-${pubDateParts.day}`;
+            if (legacyPathDate !== pubDateDate) {
+              pubDateLegacyPathDateMismatch.push({
+                file: post.file,
+                pubDate: post.pubDate,
+                legacyPath: post.legacyPath,
+                expectedDateFromLegacyPath: legacyPathDate,
+                actualDateFromPubDateUtc: pubDateDate,
+                reason: 'date mismatch',
+              });
+            }
+          }
+        }
+      }
+    }
+
     if (post.legacySlug && post.filenameSlug !== post.legacySlug) {
       filenameSlugMismatchWarning.push({
         file: post.file,
@@ -206,6 +267,7 @@ function validateMetadata(posts) {
     duplicateLegacySlug.length > 0 ||
     duplicateLegacyPath.length > 0 ||
     malformedLegacyPath.length > 0 ||
+    pubDateLegacyPathDateMismatch.length > 0 ||
     filenameSlugMismatchWarning.length > 0;
 
   return {
@@ -215,6 +277,7 @@ function validateMetadata(posts) {
     duplicateLegacySlug: duplicateLegacySlug.sort((a, b) => a.legacySlug.localeCompare(b.legacySlug)),
     duplicateLegacyPath: duplicateLegacyPath.sort((a, b) => a.legacyPath.localeCompare(b.legacyPath)),
     malformedLegacyPath: malformedLegacyPath.sort((a, b) => a.file.localeCompare(b.file)),
+    pubDateLegacyPathDateMismatch: pubDateLegacyPathDateMismatch.sort((a, b) => a.file.localeCompare(b.file)),
     filenameSlugMismatchWarning: filenameSlugMismatchWarning.sort((a, b) => a.file.localeCompare(b.file)),
     hasFindings,
   };
@@ -273,6 +336,19 @@ function renderMalformedLegacyPaths(items) {
     .join('\n');
 }
 
+function renderPubDateLegacyPathDateMismatches(items) {
+  if (items.length === 0) {
+    return '- (none)';
+  }
+
+  return items
+    .map(
+      (item) =>
+        `- \`${item.file}\`: pubDate \`${item.pubDate || '(missing)'}\` => UTC date \`${item.actualDateFromPubDateUtc}\`, legacyPath \`${item.legacyPath}\` => date \`${item.expectedDateFromLegacyPath}\` (${item.reason})`,
+    )
+    .join('\n');
+}
+
 function renderFilenameSlugWarnings(items) {
   if (items.length === 0) {
     return '- (none)';
@@ -319,6 +395,7 @@ function buildReport(data) {
     `- Duplicate legacySlug: ${metadataFindings.duplicateLegacySlug.length}`,
     `- Duplicate legacyPath: ${metadataFindings.duplicateLegacyPath.length}`,
     `- Malformed legacyPath: ${metadataFindings.malformedLegacyPath.length}`,
+    `- pubDate/legacyPath date mismatches: ${metadataFindings.pubDateLegacyPathDateMismatch.length}`,
     `- Filename/legacySlug mismatch warnings: ${metadataFindings.filenameSlugMismatchWarning.length}`,
     `- Warnings: ${warnings.length}`,
     '',
@@ -355,6 +432,9 @@ function buildReport(data) {
     '',
     '### Malformed legacyPath',
     renderMalformedLegacyPaths(metadataFindings.malformedLegacyPath),
+    '',
+    '### pubDate/legacyPath date mismatches',
+    renderPubDateLegacyPathDateMismatches(metadataFindings.pubDateLegacyPathDateMismatch),
     '',
     '### Filename slug mismatch warnings',
     renderFilenameSlugWarnings(metadataFindings.filenameSlugMismatchWarning),
@@ -438,6 +518,10 @@ async function main() {
       warnings.push('Malformed legacyPath values detected.');
     }
 
+    if (metadataFindings.pubDateLegacyPathDateMismatch.length > 0) {
+      warnings.push('pubDate and legacyPath date mismatches detected.');
+    }
+
     if (metadataFindings.filenameSlugMismatchWarning.length > 0) {
       warnings.push('Filename slug and legacySlug mismatch warnings detected.');
     }
@@ -455,6 +539,7 @@ async function main() {
       duplicateLegacySlug: metadataFindings.duplicateLegacySlug.length,
       duplicateLegacyPath: metadataFindings.duplicateLegacyPath.length,
       malformedLegacyPath: metadataFindings.malformedLegacyPath.length,
+      pubDateLegacyPathDateMismatch: metadataFindings.pubDateLegacyPathDateMismatch.length,
       filenameSlugMismatchWarning: metadataFindings.filenameSlugMismatchWarning.length,
     };
 
@@ -506,6 +591,7 @@ async function main() {
         duplicateLegacySlug: [],
         duplicateLegacyPath: [],
         malformedLegacyPath: [],
+        pubDateLegacyPathDateMismatch: [],
         filenameSlugMismatchWarning: [],
         hasFindings: true,
       },
@@ -524,6 +610,7 @@ async function main() {
           duplicateLegacySlug: 0,
           duplicateLegacyPath: 0,
           malformedLegacyPath: 0,
+          pubDateLegacyPathDateMismatch: 0,
           filenameSlugMismatchWarning: 0,
         },
         warningsCount: 1,
