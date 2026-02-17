@@ -33,6 +33,11 @@ jobs:
           LEGACY_BLOG_ROOT: legacy-source
         run: npm run audit:migration
 
+      - name: Verify migration audit gate (negative fixture)
+        env:
+          LEGACY_BLOG_ROOT: legacy-source
+        run: npm run audit:migration:verify-gate
+
       - name: Append migration parity summary
         if: always()
         run: |
@@ -64,6 +69,13 @@ jobs:
             append(`- Extra in Astro: ${Array.isArray(r.extraInAstro) ? r.extraInAstro.length : 'n/a'}`);
             append(`- Missing paths in Astro: ${Array.isArray(r.missingPathsInAstro) ? r.missingPathsInAstro.length : 'n/a'}`);
             append(`- Extra paths in Astro: ${Array.isArray(r.extraPathsInAstro) ? r.extraPathsInAstro.length : 'n/a'}`);
+            const metadataFindings =
+              r && typeof r === 'object' &&
+              r.metadataFindings && typeof r.metadataFindings === 'object' &&
+              typeof r.metadataFindings.hasFindings === 'boolean'
+                ? (r.metadataFindings.hasFindings ? 'yes' : 'no')
+                : 'n/a';
+            append(`- Metadata findings: ${metadataFindings}`);
             append(`- Has diffs: ${r.hasDiffs === true ? 'yes' : 'no'}`);
           } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);
