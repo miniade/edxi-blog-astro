@@ -8,7 +8,9 @@ const __dirname = path.dirname(__filename);
 const legacyRoot = process.env.LEGACY_BLOG_ROOT
   ? path.resolve(process.cwd(), process.env.LEGACY_BLOG_ROOT)
   : path.resolve(__dirname, '..', '..', 'edxi.github.io-blog');
-const astroRoot = path.resolve(__dirname, '..', 'src', 'content', 'blog');
+const astroRoot = process.env.ASTRO_BLOG_ROOT
+  ? path.resolve(process.cwd(), process.env.ASTRO_BLOG_ROOT)
+  : path.resolve(__dirname, '..', 'src', 'content', 'blog');
 const markdownReportPath = path.resolve(__dirname, '..', 'docs', 'MIGRATION_AUDIT.md');
 const jsonReportPath = path.resolve(__dirname, '..', 'docs', 'MIGRATION_AUDIT.json');
 const legacyPathPattern = /^\/\d{4}\/\d{2}\/\d{2}\/([^/]+)\/$/;

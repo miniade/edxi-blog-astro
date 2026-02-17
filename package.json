@@ -7,7 +7,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "audit:migration": "node scripts/audit-migration-parity.mjs"
+    "audit:migration": "node scripts/audit-migration-parity.mjs",
+    "audit:migration:verify-gate": "node scripts/verify-migration-audit-gate.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.13",
