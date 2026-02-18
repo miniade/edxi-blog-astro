@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: edxi-blog-astro
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
