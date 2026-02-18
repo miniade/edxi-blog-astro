@@ -1,13 +1,11 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execSync } from 'node:child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const legacyRoot = process.env.LEGACY_BLOG_ROOT
-  ? path.resolve(process.cwd(), process.env.LEGACY_BLOG_ROOT)
-  : path.resolve(__dirname, '..', '..', 'edxi.github.io-blog');
 const astroRoot = process.env.ASTRO_BLOG_ROOT
   ? path.resolve(process.cwd(), process.env.ASTRO_BLOG_ROOT)
   : path.resolve(__dirname, '..', 'src', 'content', 'blog');
@@ -16,20 +14,60 @@ const jsonReportPath = path.resolve(__dirname, '..', 'docs', 'MIGRATION_AUDIT.js
 const legacyPathPattern = /^\/\d{4}\/\d{2}\/\d{2}\/([^/]+)\/$/;
 const legacyPathDatePattern = /^\/(\d{4})\/(\d{2})\/(\d{2})\/[^/]+\/$/;
 
+// Legacy source from upstream/master branch of publish repo
+const PUBLISH_REPO = process.env.PUBLISH_REPO || path.resolve(__dirname, '..', '..', 'edxi.github.io-blog');
+
+async function getLegacyDataFromGit() {
+  const slugSet = new Set();
+  const pathSet = new Set();
+  
+  try {
+    // List all index.html files in upstream/master branch under YYYY/MM/DD pattern
+    const output = execSync(
+      'git ls-tree -r upstream/master --name-only | grep -E "^20[0-9]{2}/[0-9]{2}/[0-9]{2}/[^/]+/index.html$" || true',
+      { cwd: PUBLISH_REPO, encoding: 'utf8', timeout: 30000 }
+    );
+    
+    const files = output.trim().split('\n').filter(f => f);
+    const legacyPattern = /^(\d{4})\/(\d{2})\/(\d{2})\/([^/]+)\/index\.html$/;
+    
+    for (const file of files) {
+      const match = file.match(legacyPattern);
+      if (match) {
+        const [_, year, month, day, slug] = match;
+        slugSet.add(slug);
+        pathSet.add(`/${year}/${month}/${day}/${slug}/`);
+      }
+    }
+  } catch (error) {
+    console.error(`Failed to read legacy data from git: ${error.message}`);
+    // Fallback: return empty sets - audit will show everything as extra in Astro
+  }
+  
+  return {
+    legacySlugs: Array.from(slugSet).sort((a, b) => a.localeCompare(b)),
+    legacyPaths: Array.from(pathSet).sort((a, b) => a.localeCompare(b)),
+  };
+}
+
 async function walkFiles(dir) {
   const files = [];
-  const dirents = await fs.readdir(dir, { withFileTypes: true });
-  dirents.sort((a, b) => a.name.localeCompare(b.name));
+  try {
+    const dirents = await fs.readdir(dir, { withFileTypes: true });
+    dirents.sort((a, b) => a.name.localeCompare(b.name));
 
-  for (const dirent of dirents) {
-    const fullPath = path.join(dir, dirent.name);
-    if (dirent.isDirectory()) {
-      files.push(...(await walkFiles(fullPath)));
-      continue;
+    for (const dirent of dirents) {
+      const fullPath = path.join(dir, dirent.name);
+      if (dirent.isDirectory()) {
+        files.push(...(await walkFiles(fullPath)));
+        continue;
+      }
+      if (dirent.isFile()) {
+        files.push(fullPath);
+      }
     }
-    if (dirent.isFile()) {
-      files.push(fullPath);
-    }
+  } catch (error) {
+    // Directory doesn't exist or can't be read
   }
 
   return files;
@@ -82,28 +120,6 @@ function parsePubDateUtcDateParts(value) {
     year: String(parsed.getUTCFullYear()),
     month: String(parsed.getUTCMonth() + 1).padStart(2, '0'),
     day: String(parsed.getUTCDate()).padStart(2, '0'),
-  };
-}
-
-async function getLegacyData() {
-  const files = await walkFiles(legacyRoot);
-  const slugSet = new Set();
-  const pathSet = new Set();
-  const legacyPattern = /(^|\/)(\d{4})\/(\d{2})\/(\d{2})\/([^/]+)\/index\.html$/;
-
-  for (const filePath of files) {
-    const relative = toPosixPath(path.relative(legacyRoot, filePath));
-    const match = relative.match(legacyPattern);
-    if (!match) {
-      continue;
-    }
-    slugSet.add(match[5]);
-    pathSet.add(`/${match[2]}/${match[3]}/${match[4]}/${match[5]}/`);
-  }
-
-  return {
-    legacySlugs: Array.from(slugSet).sort((a, b) => a.localeCompare(b)),
-    legacyPaths: Array.from(pathSet).sort((a, b) => a.localeCompare(b)),
   };
 }
 
@@ -459,10 +475,12 @@ async function main() {
 
   try {
     const generatedAt = new Date().toISOString();
-    const [legacyData, astroData] = await Promise.all([
-      getLegacyData(),
-      getAstroPosts(),
-    ]);
+    
+    // Get legacy data from git upstream/master branch
+    const legacyData = await getLegacyDataFromGit();
+    
+    // Get Astro posts from filesystem
+    const astroData = await getAstroPosts();
 
     const missingInAstro = makeDiff(legacyData.legacySlugs, astroData.astroSlugs);
     const extraInAstro = makeDiff(astroData.astroSlugs, legacyData.legacySlugs);
