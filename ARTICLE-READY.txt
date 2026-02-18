@@ -1,0 +1,17 @@
+文章已成功准备！
+
+文件位置：
+/home/edxi/.openclaw/agents/blog/workspace/edxi-blog-astro/src/data/blog/blog-migration-with-openclaw.md
+
+文章内容完整，frontmatter 正确。
+
+由于 Git 工作区出现严重问题，无法通过自动化提交。
+
+请手动执行以下操作：
+
+cd /home/edxi/.openclaw/agents/blog/workspace/edxi-blog-astro
+git add src/data/blog/blog-migration-with-openclaw.md
+git commit -m "feat: add blog post about OpenClaw migration"
+git push origin main
+
+然后等待 GitHub Actions 自动部署。
