@@ -103,8 +103,8 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           deploy_key: ${{ secrets.PUBLISH_REPO_DEPLOY_KEY }}
-          external_repository: miniade/edxi.github.io-blog
-          publish_branch: master
+          external_repository: miniade/miniade.github.io
+          publish_branch: main
           publish_dir: ./dist
           force_orphan: true
           user_name: github-actions[bot]
