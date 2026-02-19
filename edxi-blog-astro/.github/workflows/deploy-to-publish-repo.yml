@@ -104,7 +104,7 @@ jobs:
         with:
           deploy_key: ${{ secrets.PUBLISH_REPO_DEPLOY_KEY }}
           external_repository: miniade/miniade.github.io
-          publish_branch: main
+          publish_branch: master
           publish_dir: ./dist
           force_orphan: true
           user_name: github-actions[bot]
